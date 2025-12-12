@@ -3,14 +3,14 @@ import pygame as pg
 # 遊戲配置
 TITLE = "Ink Ninja"
 FPS = 120
-GRID_WIDTH = 80
-GRID_HEIGHT = 60
-TILE_SIZE = 10
+GRID_WIDTH = 40
+GRID_HEIGHT = 30
+TILE_SIZE = 32
 
-WIDTH = GRID_WIDTH * TILE_SIZE    # 80 * 16 = 800 px
-HEIGHT = GRID_HEIGHT * TILE_SIZE  # 60 * 16 = 600 px
+WIDTH = GRID_WIDTH * TILE_SIZE    # 40 x 32 = 1280 px
+HEIGHT = GRID_HEIGHT * TILE_SIZE  # 30 x 32 = 960 px
 
-TMX_FILE = 'assets/map/lv1.tmx'
+TMX_FILE = 'assets/map/lv5.tmx'
 
 # 玩家屬性
 PLAYER_SPEED = 5

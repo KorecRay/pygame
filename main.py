@@ -7,28 +7,24 @@ from settings import *
 from core.maploader import TiledMap
 from sprites.player import Player
 
-# 檔案路徑設定
-TMX_FILE = 'assets/map/lv1.tmx'
-
 # --- 1. 遊戲初始化 ---
 pygame.init()
-# 設定螢幕尺寸 (從 settings.py 導入)
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pygame 平台遊戲")
+pygame.display.set_caption("墨影忍者V1")
 clock = pygame.time.Clock()
 
-# --- 2. 資源載入與物件初始化 ---
+# --- load resource ---
 try:
-    # 載入地圖 (預渲染的 Surface 和碰撞 Rects)
+    # load tmx map (pre-rendering Surface & Collision Rects)
     map_handler = TiledMap(TMX_FILE)
 except FileNotFoundError:
     print(f"錯誤：找不到地圖檔案 {TMX_FILE}。請檢查路徑。")
     pygame.quit()
     sys.exit()
 
-# 玩家初始化 (初始位置: x=10, y=550)
-player_start_x = 10
-player_start_y = 550
+# player init (初始位置: x=10, y=550)
+player_start_x = 1228
+player_start_y = 570
 player = Player(player_start_x, player_start_y)
 
 # 精靈群組管理 (用於統一更新和繪製)
@@ -49,7 +45,7 @@ while running:
 
     # --- 2. 更新 (Update) ---
     # 更新所有精靈。Player.update() 會接收並處理 map_handler.walls
-    all_sprites.update(map_handler.walls)
+    all_sprites.update(map_handler.walls, map_handler.hazards)
 
     # --- 3. 繪製 (Draw) ---
     screen.fill((0, 0, 0))  # 清空螢幕
@@ -62,7 +58,9 @@ while running:
 
     # ⚠️ 除錯模式：繪製碰撞箱 (請在除錯時取消註解)
     # for wall in map_handler.walls:
-    #     pygame.draw.rect(screen, (255, 0, 0), wall, 1)
+    #     pygame.draw.rect(screen, (0, 255, 0), wall, 1)
+    for wall in map_handler.hazards:
+        pygame.draw.rect(screen, (255, 0, 0), wall, 1)
 
     # 刷新顯示
     pygame.display.flip()
