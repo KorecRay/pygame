@@ -3,16 +3,17 @@ import pygame
 from settings import TILE_SIZE
 
 # --- 物理常數 ---
-GRAVITY = 0.7
-PLAYER_SPEED = 4.0
-JUMP_STRENGTH = -16.0
+GRAVITY = 0.2
+PLAYER_SPEED = 3.0  # 固定移動速度
+JUMP_STRENGTH = -7.0
+BOOST_JUMP_STRENGTH = -12.0  # 超級彈跳速度 (新增)
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
-        # 尺寸與視覺 (1 瓦片寬 x 2 瓦片高 = 32 x 64 像素)
+        # 尺寸與視覺
         width = TILE_SIZE * 0.6
         height = TILE_SIZE * 1.2
         self.image = pygame.Surface((width, height))
@@ -28,7 +29,7 @@ class Player(pygame.sprite.Sprite):
         self.vel = pygame.math.Vector2(0, 0)
         self.on_ground = False
 
-    def update(self, walls, hazards):
+    def update(self, walls, hazards, bouncers):  # 🚨 新增 bouncers 參數
 
         self._get_input()
         self._apply_gravity()
@@ -42,7 +43,16 @@ class Player(pygame.sprite.Sprite):
 
         # 檢查致命障礙物
         if self._check_lethal_collision(hazards):
-            self._respawn()  # 呼叫重生方法
+            self._respawn()
+
+        # 檢查彈跳床 (新增)
+        self._check_bouncer_collision(bouncers)
+
+    def trigger_bounce_jump(self):
+        """用於觸發超級彈跳。"""
+        self.vel.y = BOOST_JUMP_STRENGTH
+        self.on_ground = False
+        print("觸發超級彈跳！")
 
     def _respawn(self):
         """將玩家傳送回起始點並重設物理狀態。"""
@@ -97,3 +107,22 @@ class Player(pygame.sprite.Sprite):
             if self.rect.colliderect(hazard_rect):
                 return True
         return False
+
+    def _check_bouncer_collision(self, bouncers):
+        """檢查是否與彈跳床重疊，並在從上方落下時觸發彈跳。"""
+        if self.vel.y > 0:  # 僅在下落時檢查
+            for bouncer_rect in bouncers:
+                if self.rect.colliderect(bouncer_rect):
+
+                    # 檢查玩家的上一次位置，確保是從上方落下
+                    # 注意：由於是整數座標，這裡的檢查會比較簡單粗暴
+                    prev_bottom = self.rect.bottom - self.vel.y
+
+                    # 如果上次底部位置在上一次更新時高於彈跳床頂部
+                    if prev_bottom <= bouncer_rect.top:
+                        self.trigger_bounce_jump()
+
+                        # 碰撞處理：將玩家推回彈跳床頂部
+                        self.rect.bottom = bouncer_rect.top
+
+                        return
