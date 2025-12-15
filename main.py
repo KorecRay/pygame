@@ -9,7 +9,7 @@ from sprites.player import Player
 from core.light_manager import LightManager # 導入光照管理器
 
 # 遊戲常數
-PLAYER_LIGHT_RADIUS = 128 # 玩家視野半徑 (直徑 64 像素)
+
 
 # --- 1. 遊戲初始化 ---
 pygame.init()
@@ -27,8 +27,10 @@ except FileNotFoundError:
     sys.exit()
 
 # 玩家初始化 (初始位置: x=100, y=840)
-player_start_x = 100
-player_start_y = 840
+# player_start_x = 100
+# player_start_y = 840
+player_start_x = 1000
+player_start_y = 590
 player = Player(player_start_x, player_start_y)
 
 # 精靈群組管理
@@ -68,12 +70,12 @@ while running:
     light_manager.draw(screen, player.rect)
 
     # ⚠️ 除錯模式：繪製碰撞箱 (這些現在會被黑暗遮罩部分遮蓋)
-    # for wall in map_handler.walls:
-    #     pygame.draw.rect(screen, (0, 255, 0), wall, 1)
-    # for hazard in map_handler.hazards:
-    #     pygame.draw.rect(screen, (255, 0, 0), hazard, 1)
-    # for bouncer in map_handler.bouncers:
-    #     pygame.draw.rect(screen, (0, 0, 255), bouncer, 1)
+    for wall in map_handler.walls:
+        pygame.draw.rect(screen, (0, 255, 0), wall, 1)
+    for hazard in map_handler.hazards:
+        pygame.draw.rect(screen, (255, 0, 0), hazard, 1)
+    for bouncer in map_handler.bouncers:
+        pygame.draw.rect(screen, (0, 0, 255), bouncer, 1)
 
     # 刷新顯示
     pygame.display.flip()

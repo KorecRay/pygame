@@ -1,6 +1,6 @@
 # core/light_manager.py
 import pygame
-from settings import WIDTH, HEIGHT
+from settings import *
 
 
 class LightManager:

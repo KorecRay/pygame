@@ -1,0 +1,25 @@
+{
+  "lv1": {
+    "player_spawn": [100, 840],
+    "enemies": [
+      {
+        "type": "ExplosiveBot",
+        "start_pos": [400, 840],
+        "move_range": 100,
+        "speed": 1.5
+      },
+      {
+        "type": "ExplosiveBot",
+        "start_pos": [750, 680],
+        "move_range": 150,
+        "speed": 1.0
+      }
+    ]
+  },
+  "lv2": {
+    "player_spawn": [50, 50],
+    "enemies": [
+      // ... 更多敵人設定 ...
+    ]
+  }
+}

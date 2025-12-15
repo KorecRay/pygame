@@ -16,3 +16,8 @@ TMX_FILE = 'assets/map/lv5.tmx'
 PLAYER_SPEED = 5
 PLAYER_JUMP_VELOCITY = 15
 GRAVITY = 1
+PLAYER_LIGHT_RADIUS = 64 # 玩家視野半徑 (直徑 64 像素)
+
+
+# effects
+SMOOTH_LIGHTING_ENABLED = True
