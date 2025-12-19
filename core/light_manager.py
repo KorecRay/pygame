@@ -49,4 +49,4 @@ class LightManager:
 
         # 4. 將最終帶有光圈的黑暗遮罩繪製到螢幕上
         #
-        screen.blit(self.dark_mask, (0, 0))
+        # screen.blit(self.dark_mask, (0, 0))

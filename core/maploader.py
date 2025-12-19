@@ -1,9 +1,8 @@
-# core/maploader.py
 import pygame
 import pytmx
+import json
 from settings import *
 from typing import List
-
 
 class TiledMap:
     def __init__(self, filename):
@@ -28,6 +27,11 @@ class TiledMap:
 
         # 6. 載入彈跳床物件 (所有物件都會彈跳)
         self.bouncers = self._load_objects_from_layer("Bouncers")
+
+        # 7. 載入關卡特定數據 (新增)
+        # 從 TMX 檔案名中提取關卡 ID，例如 'assets/map/lv1.tmx' -> 'lv1'
+        level_id = filename.split('/')[-1].split('.')[0]
+        self.player_spawn, self.enemy_data_list = self._load_level_data(level_id)
 
     def _make_map_surface(self):
         """將 TMX 中的所有瓦片圖層合併到一個 Pygame Surface 上。"""
@@ -62,5 +66,28 @@ class TiledMap:
 
         return rect_list
 
-# 由於您要求簡化，不再需要 _load_collision_objects, _load_hazard_objects, _load_bouncers
-# 這些方法已經被 _load_objects_from_layer 替換和整合。
+    def _load_level_data(self, level_id):
+        """從 JSON 檔案中讀取特定關卡的數據。"""
+        try:
+            with open(LEVEL_DATA_PATH, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            level_data = data.get(level_id)
+            if not level_data:
+                raise ValueError(f"JSON 檔案中未找到關卡ID: {level_id}")
+
+            player_spawn = level_data.get("player_spawn", [0, 0])
+            enemies = level_data.get("enemies", [])
+
+            print(f"成功載入關卡 {level_id}：玩家起始點 {player_spawn}, 敵人數量 {len(enemies)}")
+            return player_spawn, enemies
+
+        except FileNotFoundError:
+            print(f"錯誤：找不到關卡數據檔案: {LEVEL_DATA_PATH}")
+            return [0, 0], []
+        except json.JSONDecodeError:
+            print(f"錯誤：解析關卡數據檔案 {LEVEL_DATA_PATH} 失敗，請檢查 JSON 格式。")
+            return [0, 0], []
+        except Exception as e:
+            print(f"載入關卡數據時發生未知錯誤: {e}")
+            return [0, 0], []

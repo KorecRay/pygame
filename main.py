@@ -6,10 +6,8 @@ import sys
 from settings import *
 from core.maploader import TiledMap
 from sprites.player import Player
-from core.light_manager import LightManager # 導入光照管理器
-
-# 遊戲常數
-
+from sprites.enemy import Enemy     # 🚨 導入 Enemy 類別
+from core.light_manager import LightManager
 
 # --- 1. 遊戲初始化 ---
 pygame.init()
@@ -19,26 +17,43 @@ clock = pygame.time.Clock()
 
 # --- 2. 資源載入與物件初始化 ---
 try:
-    # 載入 TMX 地圖 (包含 Walls, Hazards, Bouncers 列表)
+    # 載入 TMX 地圖 (map_handler 現在包含 player_spawn 和 enemy_data_list)
     map_handler = TiledMap(TMX_FILE)
 except FileNotFoundError:
     print(f"錯誤：找不到地圖檔案 {TMX_FILE}。請檢查路徑。")
     pygame.quit()
     sys.exit()
 
-# 玩家初始化 (初始位置: x=100, y=840)
-# player_start_x = 100
-# player_start_y = 840
-player_start_x = 1000
-player_start_y = 590
+# 🚨 玩家初始化：從載入的關卡數據中獲取起始位置
+player_start_x, player_start_y = map_handler.player_spawn
 player = Player(player_start_x, player_start_y)
 
 # 精靈群組管理
 all_sprites = pygame.sprite.Group()
+enemies = pygame.sprite.Group()  # 🚨 新增敵人精靈群組
 all_sprites.add(player)
 
-# 初始化光照管理器
-light_manager = LightManager(PLAYER_LIGHT_RADIUS)
+# 🚨 敵人初始化：根據載入的數據創建敵人
+for enemy_data in map_handler.enemy_data_list:
+    x, y = enemy_data["start_pos"]
+    move_range = enemy_data["move_range"]
+    speed = enemy_data["speed"]
+    
+    # 這裡可以根據 type 欄位來創建不同類型的敵人 (目前只處理 ExplosiveBot)
+    if enemy_data["type"] == "ExplosiveBot":
+        new_enemy = Enemy(x, y, move_range, speed)
+        enemies.add(new_enemy)
+        all_sprites.add(new_enemy)
+
+# 初始化光照管理器 (確保 PLAYER_LIGHT_RADIUS 已定義)
+try:
+    # 嘗試從 settings 中獲取，否則使用預設值
+    light_radius = PLAYER_LIGHT_RADIUS
+except NameError:
+    light_radius = 32 # 使用預設值
+    print("警告: PLAYER_LIGHT_RADIUS 未在 settings.py 中定義，使用預設值 32。")
+
+light_manager = LightManager(light_radius)
 
 # --- 3. 遊戲主迴圈 ---
 running = True
@@ -53,29 +68,33 @@ while running:
             running = False
 
     # --- 2. 更新 (Update) ---
-    # 傳遞地圖碰撞物、致命區域和彈跳床給玩家
+    # 更新玩家 (傳遞地圖碰撞物、致命區域和彈跳床)
+    # 敵人暫時不需要額外的碰撞列表，它們只與 walls 碰撞
     all_sprites.update(map_handler.walls, map_handler.hazards, map_handler.bouncers)
-
+    
+    # 🚨 更新敵人 (只需傳入牆壁進行碰撞檢測和重力處理)
+    enemies.update(map_handler.walls) 
+    
+    # 🚨 玩家與敵人的碰撞檢測 (Player-Enemy Interaction)
+    # False 表示玩家碰到敵人時，敵人不會自動從群組中移除
+    enemy_hits = pygame.sprite.spritecollide(player, enemies, False) 
+    if enemy_hits:
+        for enemy in enemy_hits:
+            # 敵人被觸碰，觸發爆炸，玩家重生
+            enemy.explode() 
+            player._respawn()
+            
     # --- 3. 繪製 (Draw) ---
     screen.fill((0, 0, 0))  # 清空螢幕
 
     # 繪製地圖背景 (在黑暗遮罩之下)
     screen.blit(map_handler.map_surface, (0, 0))
 
-    # 繪製所有精靈 (玩家在黑暗遮罩之下)
+    # 繪製所有精靈 (包括玩家和敵人)
     all_sprites.draw(screen)
 
     # 繪製黑暗遮罩 (必須在所有遊戲元素繪製完成後)
-    # 遮罩會以玩家的碰撞箱中心為原點鑿出光圈
     light_manager.draw(screen, player.rect)
-
-    # ⚠️ 除錯模式：繪製碰撞箱 (這些現在會被黑暗遮罩部分遮蓋)
-    for wall in map_handler.walls:
-        pygame.draw.rect(screen, (0, 255, 0), wall, 1)
-    for hazard in map_handler.hazards:
-        pygame.draw.rect(screen, (255, 0, 0), hazard, 1)
-    for bouncer in map_handler.bouncers:
-        pygame.draw.rect(screen, (0, 0, 255), bouncer, 1)
 
     # 刷新顯示
     pygame.display.flip()
