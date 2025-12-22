@@ -1,8 +1,10 @@
+# core/maploader.py
 import pygame
 import pytmx
 import json
-from settings import *
+from settings import WIDTH, HEIGHT, TMX_FILE, LEVEL_DATA_PATH  # 確保這些已在 settings 定義
 from typing import List
+
 
 class TiledMap:
     def __init__(self, filename):
@@ -19,24 +21,25 @@ class TiledMap:
         # 3. 預渲染地圖 Surface (視覺部分)
         self.map_surface = self._make_map_surface()
 
-        # 4. 載入靜態牆壁/地面 (所有物件都是實體碰撞)
+        # 4. 載入碰撞與功能圖層
         self.walls = self._load_objects_from_layer("Collision")
-
-        # 5. 載入致命障礙物 (所有物件都會 GG)
         self.hazards = self._load_objects_from_layer("Hazards")
-
-        # 6. 載入彈跳床物件 (所有物件都會彈跳)
         self.bouncers = self._load_objects_from_layer("Bouncers")
 
-        # 7. 載入關卡特定數據 (新增)
-        # 從 TMX 檔案名中提取關卡 ID，例如 'assets/map/lv1.tmx' -> 'lv1'
+        # 5. 載入關卡 JSON 數據
+        # 取得檔名作為 ID，例如 'assets/map/lv1.tmx' -> 'lv1'
         level_id = filename.split('/')[-1].split('.')[0]
-        self.player_spawn, self.enemy_data_list = self._load_level_data(level_id)
+
+        # 🚨 接收三個回傳值：玩家點、敵人列表、道具列表
+        spawn, enemies, props = self._load_level_data(level_id)
+
+        self.player_spawn = spawn
+        self.enemy_data_list = enemies
+        self.prop_data_list = props  # 儲存道具資料供 main.py 使用
 
     def _make_map_surface(self):
         """將 TMX 中的所有瓦片圖層合併到一個 Pygame Surface 上。"""
         temp_surface = pygame.Surface((self.width, self.height))
-        # 遍歷所有可見的瓦片圖層並 Blit 到 Surface 上
         for layer in self.tmx_data.visible_layers:
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
@@ -48,46 +51,38 @@ class TiledMap:
         return temp_surface
 
     def _load_objects_from_layer(self, layer_name) -> List[pygame.Rect]:
-        """通用方法：載入指定圖層中所有物件的邊界 Rect，不檢查任何屬性。"""
+        """從物件圖層提取 Rect 列表。"""
         rect_list = []
         try:
             obj_layer = self.tmx_data.get_layer_by_name(layer_name)
-
             for obj in obj_layer:
-                # 無論是矩形、多邊形還是折線，pytmx 都會提供基礎的邊界矩形 (x, y, width, height)
                 rect = pygame.Rect(obj.x, obj.y, obj.width, obj.height)
                 rect_list.append(rect)
-
-            print(f"地圖載入成功：提取了 {len(rect_list)} 個 {layer_name} 類型物件。")
+            print(f"地圖載入成功：提取了 {len(rect_list)} 個 {layer_name} 物件。")
         except ValueError:
-            print(f"警告：地圖中未找到名為 '{layer_name}' 的物件圖層。")
-        except Exception as e:
-            print(f"載入 {layer_name} 時發生錯誤: {e}")
-
+            print(f"警告：圖層 '{layer_name}' 未找到。")
         return rect_list
 
     def _load_level_data(self, level_id):
-        """從 JSON 檔案中讀取特定關卡的數據。"""
+        """從 JSON 檔案讀取關卡配置。"""
         try:
             with open(LEVEL_DATA_PATH, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
             level_data = data.get(level_id)
             if not level_data:
-                raise ValueError(f"JSON 檔案中未找到關卡ID: {level_id}")
+                raise ValueError(f"JSON 中找不到關卡: {level_id}")
 
             player_spawn = level_data.get("player_spawn", [0, 0])
             enemies = level_data.get("enemies", [])
+            props = level_data.get("props", [])  # 修正原本的 // 錯誤註釋
 
-            print(f"成功載入關卡 {level_id}：玩家起始點 {player_spawn}, 敵人數量 {len(enemies)}")
-            return player_spawn, enemies
+            print(f"成功載入關卡 {level_id} 設定。")
+            return player_spawn, enemies, props
 
         except FileNotFoundError:
-            print(f"錯誤：找不到關卡數據檔案: {LEVEL_DATA_PATH}")
-            return [0, 0], []
-        except json.JSONDecodeError:
-            print(f"錯誤：解析關卡數據檔案 {LEVEL_DATA_PATH} 失敗，請檢查 JSON 格式。")
-            return [0, 0], []
+            print(f"錯誤：找不到 JSON 檔案 {LEVEL_DATA_PATH}")
+            return [0, 0], [], []
         except Exception as e:
-            print(f"載入關卡數據時發生未知錯誤: {e}")
-            return [0, 0], []
+            print(f"JSON 載入錯誤: {e}")
+            return [0, 0], [], []

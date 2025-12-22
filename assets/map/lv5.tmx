@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="106">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="107">
  <tileset firstgid="1" name="factory_32x32_tiles" tilewidth="32" tileheight="32" tilecount="64" columns="8">
   <image source="factory_32x32_tiles.png" width="256" height="256"/>
  </tileset>
@@ -30,7 +30,7 @@
 4,3,3,1,2684354810,0,0,0,0,0,1610612986,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,0,0,0,0,0,250,0,0,
 0,0,0,0,0,0,0,0,0,0,0,25,18,20,18,26,26,26,26,18,26,26,26,26,26,18,26,26,26,26,26,27,0,0,1610612986,34,34,34,0,0,
 0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,50,50,50,0,0,
-0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,12,250,250,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,1,2,3,4,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,250,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,250,0,0,0,0,
@@ -102,6 +102,7 @@
   <object id="102" x="751.636" y="704" width="16.3636" height="32"/>
   <object id="103" x="768" y="736" width="32" height="16"/>
   <object id="104" x="128" y="416" width="16.5" height="32"/>
+  <object id="106" x="224" y="527.25" width="64" height="16.75"/>
  </objectgroup>
  <objectgroup color="#0000ff" id="7" name="Bouncers" tintcolor="#0000ff">
   <object id="77" x="1248" y="896" width="32" height="32"/>

@@ -1,4 +1,3 @@
-# core/light_manager.py
 import pygame
 from settings import *
 
