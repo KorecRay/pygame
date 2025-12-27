@@ -15,10 +15,15 @@ TMX_FILE = 'assets/map/lv5.tmx'
 LEVEL_DATA_PATH = 'assets/map/lvsetting.json'
 
 # 玩家屬性
-PLAYER_SPEED = 5
-PLAYER_JUMP_VELOCITY = 15
-GRAVITY = 1
-PLAYER_LIGHT_RADIUS = 128 # 玩家視野半徑 (直徑 64 像素)
+# 使用專門給玩家的參數，來源：sprites/player.py 的原始常數
+PLAYER_SPEED = 3.0
+GRAVITY = 0.2
+JUMP_STRENGTH = -7.0
+BOOST_JUMP_STRENGTH = -12.0
+PLAYER_LIGHT_RADIUS = 128  # 玩家視野半徑 (像素，半徑)
+
+# 備註/舊參數
+# PLAYER_JUMP_VELOCITY (已棄用，改用 JUMP_STRENGTH)
 
 
 # effects

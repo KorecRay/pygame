@@ -1,10 +1,5 @@
 import pygame
-from settings import TILE_SIZE
-
-GRAVITY = 0.2
-PLAYER_SPEED = 3.0
-JUMP_STRENGTH = -7.0
-BOOST_JUMP_STRENGTH = -12.0
+from settings import TILE_SIZE, GRAVITY, PLAYER_SPEED, JUMP_STRENGTH, BOOST_JUMP_STRENGTH
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
