@@ -18,7 +18,7 @@ LEVEL_DATA_PATH = 'assets/map/lvsetting.json'
 PLAYER_SPEED = 5
 PLAYER_JUMP_VELOCITY = 15
 GRAVITY = 1
-PLAYER_LIGHT_RADIUS = 96 # 玩家視野半徑 (直徑 64 像素)
+PLAYER_LIGHT_RADIUS = 128 # 玩家視野半徑 (直徑 64 像素)
 
 
 # effects

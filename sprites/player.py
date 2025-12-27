@@ -1,127 +1,126 @@
 import pygame
 from settings import TILE_SIZE
 
-# --- 物理常數 ---
 GRAVITY = 0.2
-PLAYER_SPEED = 3.0  # 固定移動速度
+PLAYER_SPEED = 3.0
 JUMP_STRENGTH = -7.0
-BOOST_JUMP_STRENGTH = -12.0  # 超級彈跳速度 (新增)
-
+BOOST_JUMP_STRENGTH = -12.0
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-
-        # 尺寸與視覺
-        width = TILE_SIZE * 0.6
-        height = TILE_SIZE * 1.2
-        self.image = pygame.Surface((width, height))
-        self.image.fill((0, 0, 255))
-
-        # 碰撞箱
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-        # 記錄起始點，用於死亡重生
-        self.spawn_pos = (x, y)
-
-        # 狀態
-        self.vel = pygame.math.Vector2(0, 0)
+        self.frame_index = 0
+        self.animation_speed = 0.15
+        self.facing_right = True
+        self.is_dead = False
         self.on_ground = False
+        
+        # 載入切分 (寬 96px, 高 128px)
+        self.run_frames = self._load_run_frames("assets/sprites/only_run.png", 6)
+        
+        self.image = self.run_frames[0]
+        self.rect = self.image.get_rect(topleft=(x, y))
+        
+        # 使用 Vector2 處理微小位移，避免整數捨去造成的抖動
+        self.pos = pygame.math.Vector2(x, y)
+        self.vel = pygame.math.Vector2(0, 0)
 
-    def update(self, walls, hazards, bouncers):  # 🚨 新增 bouncers 參數
+    def _load_run_frames(self, path, count):
+        frames = []
+        try:
+            sheet = pygame.image.load(path).convert_alpha()
+            f_w, f_h, spacing = 96, 128, 32
+            for i in range(count):
+                x_pos = i * (f_w + spacing)
+                frame = sheet.subsurface((x_pos, 0, f_w, f_h))
+                # 縮放至適合遊戲的比例 (寬約 0.8 瓦片, 高約 1.2 瓦片)
+                frame = pygame.transform.scale(frame, (int(TILE_SIZE * 0.8), int(TILE_SIZE * 1.2)))
+                frames.append(frame)
+        except:
+            surf = pygame.Surface((32, 48))
+            surf.fill((0, 0, 255))
+            frames = [surf]
+        return frames
 
+    def _animate(self):
+        # 即使沒動，也要確保 self.image 有值
+        if self.vel.x != 0 and self.on_ground:
+            self.frame_index += self.animation_speed
+        else:
+            # 沒動時固定在第 0 幀
+            self.frame_index = 0
+            
+        if self.frame_index >= len(self.run_frames):
+            self.frame_index = 0
+        
+        # 更新圖片
+        img = self.run_frames[int(self.frame_index)]
+        self.image = pygame.transform.flip(img, True, False) if not self.facing_right else img
+
+    def update(self, walls, hazards, bouncers):
         self._get_input()
         self._apply_gravity()
 
-        # 執行 X/Y 分離移動和牆壁碰撞
-        self.rect.x += self.vel.x
-        self._collide_and_resolve(self.vel.x, 0, walls)
+        # 分離 X 與 Y 的移動與碰撞修正，防止對角線穿牆
+        # 1. X 軸
+        self.pos.x += self.vel.x
+        self.rect.x = round(self.pos.x)
+        self._collide_with_walls(walls, 'x')
 
-        self.rect.y += self.vel.y
-        self._collide_and_resolve(0, self.vel.y, walls)
+        # 2. Y 軸
+        self.on_ground = False # 每幀重置，由碰撞偵測確認
+        self.pos.y += self.vel.y
+        self.rect.y = round(self.pos.y)
+        self._collide_with_walls(walls, 'y')
 
-        # 檢查致命障礙物
-        if self._check_lethal_collision(hazards):
-            self._respawn()
-
-        # 檢查彈跳床 (新增)
-        self._check_bouncer_collision(bouncers)
-
-    def trigger_bounce_jump(self):
-        """用於觸發超級彈跳。"""
-        self.vel.y = BOOST_JUMP_STRENGTH
-        self.on_ground = False
-        print("觸發超級彈跳！")
-
-    def _respawn(self):
-        """將玩家傳送回起始點並重設物理狀態。"""
-        self.rect.topleft = self.spawn_pos
-        self.vel = pygame.math.Vector2(0, 0)
-        self.on_ground = False
-        print("玩家死亡，傳送回起點。")
+        self._animate()
+        
+        if self._check_lethal(hazards):
+            self.is_dead = True
+        self._check_bouncers(bouncers)
 
     def _get_input(self):
-
         keys = pygame.key.get_pressed()
         self.vel.x = 0
-
         if keys[pygame.K_a]:
             self.vel.x = -PLAYER_SPEED
+            self.facing_right = False
         if keys[pygame.K_d]:
             self.vel.x = PLAYER_SPEED
-
+            self.facing_right = True
         if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
             self.vel.y = JUMP_STRENGTH
             self.on_ground = False
 
     def _apply_gravity(self):
-
         self.vel.y += GRAVITY
-        if self.vel.y > 15:
-            self.vel.y = 15
+        if self.vel.y > 10: self.vel.y = 10
 
-    def _collide_and_resolve(self, dx, dy, walls):
-
+    def _collide_with_walls(self, walls, direction):
         for wall in walls:
             if self.rect.colliderect(wall):
-
-                if dx != 0:
-                    if dx > 0:
-                        self.rect.right = wall.left
-                    else:
-                        self.rect.left = wall.right
+                if direction == 'x':
+                    if self.vel.x > 0: self.rect.right = wall.left
+                    if self.vel.x < 0: self.rect.left = wall.right
+                    self.pos.x = self.rect.x
                     self.vel.x = 0
-
-                if dy != 0:
-                    if dy > 0:
+                if direction == 'y':
+                    if self.vel.y > 0:
                         self.rect.bottom = wall.top
                         self.on_ground = True
-                    else:
+                    if self.vel.y < 0:
                         self.rect.top = wall.bottom
+                    self.pos.y = self.rect.y
                     self.vel.y = 0
 
-    def _check_lethal_collision(self, hazards):
+    def _check_lethal(self, hazards):
+        return any(self.rect.colliderect(h) for h in hazards)
 
-        for hazard_rect in hazards:
-            if self.rect.colliderect(hazard_rect):
-                return True
-        return False
-
-    def _check_bouncer_collision(self, bouncers):
-        """檢查是否與彈跳床重疊，並在從上方落下時觸發彈跳。"""
-        if self.vel.y > 0:  # 僅在下落時檢查
-            for bouncer_rect in bouncers:
-                if self.rect.colliderect(bouncer_rect):
-
-                    # 檢查玩家的上一次位置，確保是從上方落下
-                    # 注意：由於是整數座標，這裡的檢查會比較簡單粗暴
-                    prev_bottom = self.rect.bottom - self.vel.y
-
-                    # 如果上次底部位置在上一次更新時高於彈跳床頂部
-                    if prev_bottom <= bouncer_rect.top:
-                        self.trigger_bounce_jump()
-
-                        # 碰撞處理：將玩家推回彈跳床頂部
-                        self.rect.bottom = bouncer_rect.top
-
-                        return
+    def _check_bouncers(self, bouncers):
+        if self.vel.y > 0:
+            for b in bouncers:
+                if self.rect.colliderect(b) and (self.rect.bottom - self.vel.y) <= b.top:
+                    self.vel.y = BOOST_JUMP_STRENGTH
+                    self.rect.bottom = b.top
+                    self.pos.y = self.rect.y
+                    self.on_ground = False
