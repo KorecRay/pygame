@@ -1,4 +1,12 @@
 {
+  "lv1": {
+    "player_spawn": [60, 600],
+    "destination": [1248, 160],
+    "enemies": [],
+    "props": [
+      {"type": 4, "pos": [895, 479]}
+    ]
+  },
   "lv5": {
     "player_spawn": [100, 840],
     "destination": [0, 0],
