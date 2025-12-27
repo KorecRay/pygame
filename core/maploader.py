@@ -31,9 +31,10 @@ class TiledMap:
         level_id = filename.split('/')[-1].split('.')[0]
 
         # 🚨 接收三個回傳值：玩家點、敵人列表、道具列表
-        spawn, enemies, props = self._load_level_data(level_id)
+        spawn, destination, enemies, props = self._load_level_data(level_id)
 
         self.player_spawn = spawn
+        self.destination = destination
         self.enemy_data_list = enemies
         self.prop_data_list = props  # 儲存道具資料供 main.py 使用
 
@@ -74,11 +75,12 @@ class TiledMap:
                 raise ValueError(f"JSON 中找不到關卡: {level_id}")
 
             player_spawn = level_data.get("player_spawn", [0, 0])
+            destination = level_data.get("destination")
             enemies = level_data.get("enemies", [])
-            props = level_data.get("props", [])  # 修正原本的 // 錯誤註釋
+            props = level_data.get("props", [])
 
             print(f"成功載入關卡 {level_id} 設定。")
-            return player_spawn, enemies, props
+            return player_spawn, destination, enemies, props
 
         except FileNotFoundError:
             print(f"錯誤：找不到 JSON 檔案 {LEVEL_DATA_PATH}")

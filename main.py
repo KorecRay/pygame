@@ -1,4 +1,3 @@
-# main.py
 import pygame
 import sys
 from settings import *
@@ -6,142 +5,150 @@ from core.maploader import TiledMap
 from sprites.player import Player
 from sprites.enemy import Enemy
 from sprites.prop import Prop
+from sprites.dest import Destination
 from core.light_manager import LightManager
 
-# --- 1. 遊戲初始化 ---
+# --- 初始化 ---
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("墨影忍者V1 - 死亡重製版")
+pygame.display.set_caption("墨影忍者 - 重構版")
 clock = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", 64, bold=True)
 
-# --- 2. 資源載入 ---
-try:
-    map_handler = TiledMap(TMX_FILE)
-except FileNotFoundError:
-    print(f"錯誤：找不到地圖檔案 {TMX_FILE}")
-    pygame.quit()
-    sys.exit()
-
-# 建立精靈群組
+# --- 全域變數 ---
+map_handler = TiledMap(TMX_FILE)
 all_sprites = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 props_group = pygame.sprite.Group()
+dest_group = pygame.sprite.Group()
 
-# 狀態管理
+player = None
 shield_timer = 0
 torch_timer = 0
 has_anti_explosion = False
-player = None  # 先宣告全域變數
+level_cleared = False
 
 def reset_level():
-    """重新初始化關卡：清空所有精靈並根據數據重新生成"""
-    global player, shield_timer, torch_timer, has_anti_explosion
-
-    # 1. 清空舊群組
+    """徹底清空並重製關卡物件"""
+    global player, shield_timer, torch_timer, has_anti_explosion, level_cleared
+    
+    # 1. 清空所有舊數據
     all_sprites.empty()
     enemies.empty()
     props_group.empty()
-
-    # 2. 重置狀態
+    dest_group.empty()
+    
     shield_timer = 0
     torch_timer = 0
     has_anti_explosion = False
+    level_cleared = False
 
-    # 3. 獲取關卡數據
+    # 2. 取得關卡配置 (對應 maploader 的 4 個回傳值)
     level_id = TMX_FILE.split('/')[-1].split('.')[0]
-    player_pos, enemy_data, prop_data = map_handler._load_level_data(level_id)
+    p_spawn, d_pos, e_list, p_list = map_handler._load_level_data(level_id)
 
-    # 4. 重新生成玩家 (確保這裡會觸發 Player.__init__ 重新載入動畫)
-    player = Player(player_pos[0], player_pos[1])
+    # 3. 重新生成物件
+    # 終點
+    if d_pos:
+        goal = Destination(d_pos[0], d_pos[1])
+        dest_group.add(goal)
+        all_sprites.add(goal)
+
+    # 玩家 (確保 Player 類別內的 __init__ 會重新載入動畫)
+    player = Player(p_spawn[0], p_spawn[1])
     all_sprites.add(player)
 
-    # 5. 重新生成敵人
-    for e in enemy_data:
+    # 敵人
+    for e in e_list:
         new_enemy = Enemy(e["start_pos"][0], e["start_pos"][1], e["move_range"], e["speed"])
         enemies.add(new_enemy)
         all_sprites.add(new_enemy)
 
-    # 6. 重新生成道具
-    for p in prop_data:
+    # 道具
+    for p in p_list:
         new_prop = Prop(p["pos"][0], p["pos"][1], p["type"])
         props_group.add(new_prop)
         all_sprites.add(new_prop)
-    
-    print(f"關卡已重製，玩家位置：{player_pos}")
 
-# 第一次啟動遊戲
+# 啟動遊戲
 reset_level()
+light_manager = LightManager(PLAYER_LIGHT_RADIUS)
 
-# 初始化光照
-try:
-    light_radius = PLAYER_LIGHT_RADIUS
-except NameError:
-    light_radius = 32
-light_manager = LightManager(light_radius)
-
-# --- 3. 遊戲主迴圈 ---
+# --- 主迴圈 ---
 running = True
 while running:
     clock.tick(FPS)
 
+    # 1. 事件處理
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN and level_cleared:
+            if event.key == pygame.K_r: # 通關後按 R 重玩
+                reset_level()
 
-    # --- 1. 更新邏輯 ---
-    if shield_timer > 0: shield_timer -= 1
-    if torch_timer > 0: torch_timer -= 1
+    if not level_cleared:
+        # 2. 更新邏輯
+        if shield_timer > 0: shield_timer -= 1
+        if torch_timer > 0: torch_timer -= 1
 
-    # 更新所有精靈 (這會執行 player.update 並呼叫 _animate())
-    all_sprites.update(map_handler.walls, map_handler.hazards, map_handler.bouncers)
-    enemies.update(map_handler.walls)
+        all_sprites.update(map_handler.walls, map_handler.hazards, map_handler.bouncers)
+        enemies.update(map_handler.walls)
 
-    # --- 2. 死亡檢測 (提前處理) ---
-    
-    # 檢查玩家內部死亡標記 (墜落或陷阱)
-    if player.is_dead:
-        reset_level()
-        continue # 立即跳過本幀後續碰撞，防止對已刪除的 player 進行操作
-
-    # 道具碰撞
-    prop_hits = pygame.sprite.spritecollide(player, props_group, True)
-    for p in prop_hits:
-        if p.prop_type == 1: player.vel.y = -12.0 # 超級跳躍
-        elif p.prop_type == 2: has_anti_explosion = True
-        elif p.prop_type == 3: shield_timer = 5 * FPS
-        elif p.prop_type == 4: torch_timer = 2 * FPS
-
-    # 敵人碰撞
-    enemy_hits = pygame.sprite.spritecollide(player, enemies, False)
-    if enemy_hits:
-        should_reset = False
-        for enemy in enemy_hits:
-            if has_anti_explosion or shield_timer > 0:
-                enemy.explode()
-                has_anti_explosion = False 
-            else:
-                should_reset = True
-        
-        if should_reset:
+        # 3. 碰撞檢查
+        # A. 死亡檢查 (標記死亡或掉落)
+        if player.is_dead:
             reset_level()
             continue
 
-    # --- 3. 繪製邏輯 ---
+        # B. 終點檢查
+        if pygame.sprite.spritecollideany(player, dest_group):
+            level_cleared = True
+
+        # C. 道具檢查
+        p_hits = pygame.sprite.spritecollide(player, props_group, True)
+        for p in p_hits:
+            if p.prop_type == 1: player.vel.y = -12.0 # 跳躍
+            elif p.prop_type == 2: has_anti_explosion = True
+            elif p.prop_type == 3: shield_timer = 5 * FPS
+            elif p.prop_type == 4: torch_timer = 2 * FPS
+
+        # D. 敵人檢查
+        e_hits = pygame.sprite.spritecollide(player, enemies, False)
+        if e_hits:
+            should_die = True
+            for e in e_hits:
+                if shield_timer > 0 or has_anti_explosion:
+                    e.explode()
+                    has_anti_explosion = False
+                    should_die = False
+            if should_die:
+                reset_level()
+                continue
+
+    # 4. 繪製邏輯
     screen.fill((0, 0, 0))
     screen.blit(map_handler.map_surface, (0, 0))
     
-    # 繪製精靈
+    # 視覺反饋：護盾時透明度
+    if shield_timer > 0: player.image.set_alpha(150)
+    else: player.image.set_alpha(255)
+
     all_sprites.draw(screen)
 
-    # 視覺回饋 (透明度處理)
-    if shield_timer > 0:
-        player.image.set_alpha(150)
-    else:
-        player.image.set_alpha(255)
-
     # 光照處理
-    if torch_timer <= 0:
+    if not level_cleared and torch_timer <= 0:
         light_manager.draw(screen, player.rect)
+
+    # 通關文字
+    if level_cleared:
+        overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        screen.blit(overlay, (0, 0))
+        txt = font.render("MISSION ACCOMPLISHED", True, (0, 255, 0))
+        screen.blit(txt, txt.get_rect(center=(WIDTH//2, HEIGHT//2)))
+        sub_txt = font.render("Press 'R' to Restart", True, (200, 200, 200))
+        screen.blit(sub_txt, sub_txt.get_rect(center=(WIDTH//2, HEIGHT//2 + 80)))
 
     pygame.display.flip()
 

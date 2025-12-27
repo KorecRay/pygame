@@ -1,7 +1,7 @@
 {
   "lv5": {
     "player_spawn": [100, 840],
-    "destination": [20, 50],
+    "destination": [0, 0],
     "enemies": [
       {
         "type": "ExplosiveBot",
