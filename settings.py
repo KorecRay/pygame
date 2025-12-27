@@ -28,3 +28,6 @@ PLAYER_LIGHT_RADIUS = 128  # 玩家視野半徑 (像素，半徑)
 
 # effects
 SMOOTH_LIGHTING_ENABLED = True
+
+# debug
+DEBUG_MODE = False

@@ -9,6 +9,7 @@ from sprites.prop import Prop
 from sprites.dest import Destination
 from core.light_manager import LightManager
 from core.level import LvSelect
+from core.debug import Debugger
 
 # --- 1. 初始化 ---
 pygame.init()
@@ -130,6 +131,9 @@ while running:
                 # 遊戲中按 R 手動重製
                 if event.key == pygame.K_r:
                     reset_lv_data()
+                if event.key == pygame.K_m:
+                    DEBUG_MODE = not DEBUG_MODE
+                    print(f"偵錯模式: {'開啟' if DEBUG_MODE else '關閉'}")
 
         if not lv_cleared:
             # 1. 計時器與視野 Lerp
@@ -189,6 +193,11 @@ while running:
         # 光照
         if not lv_cleared:
             light_manager.draw(screen, player.rect, current_radius)
+
+        # debug
+
+        if DEBUG_MODE:
+            Debugger.draw_hitboxes(screen, player, enemies, props_group, dest_group, map_handler)
 
         # 通關 UI
         if lv_cleared:
