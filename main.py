@@ -36,23 +36,29 @@ lerp_speed = 0.08  # 數值越小，擴散與收縮越平滑
 
 def reset_level():
     """徹底清空並重製關卡物件"""
+    # 🚨 必須確保 level_cleared 在 global 宣告中
     global player, shield_timer, torch_timer, has_anti_explosion, level_cleared
     global current_radius, target_radius
     
+    print("--- 執行重置邏輯 ---") # 偵錯用
+    
+    # 1. 清空所有舊數據
     all_sprites.empty()
     enemies.empty()
     props_group.empty()
     dest_group.empty()
     
+    # 2. 🚨 強制設回 False
+    level_cleared = False 
     shield_timer = 0
     torch_timer = 0
     has_anti_explosion = False
-    level_cleared = False
     
-    # 重置視野
+    # 3. 重置視野
     current_radius = base_radius
     target_radius = base_radius
 
+    # 4. 重新載入地圖數據與生成物件
     level_id = TMX_FILE.split('/')[-1].split('.')[0]
     p_spawn, d_pos, e_list, p_list = map_handler._load_level_data(level_id)
 
@@ -66,11 +72,13 @@ def reset_level():
 
     for e in e_list:
         new_enemy = Enemy(e["start_pos"][0], e["start_pos"][1], e["move_range"], e["speed"])
-        enemies.add(new_enemy); all_sprites.add(new_enemy)
+        enemies.add(new_enemy)
+        all_sprites.add(new_enemy)
 
     for p in p_list:
         new_prop = Prop(p["pos"][0], p["pos"][1], p["type"])
-        props_group.add(new_prop); all_sprites.add(new_prop)
+        props_group.add(new_prop)
+        all_sprites.add(new_prop)
 
 reset_level()
 light_manager = LightManager(base_radius)
@@ -83,8 +91,10 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN and level_cleared:
-            if event.key == pygame.K_r:
+        if event.type == pygame.KEYDOWN:
+            # 如果已經通關，按 R 重啟
+            if event.key == pygame.K_r and level_cleared:
+                print("手動觸發重置關卡")
                 reset_level()
 
     if not level_cleared:
