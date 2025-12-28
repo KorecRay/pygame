@@ -7,6 +7,15 @@
       {"type": 4, "pos": [895, 479]}
     ]
   },
+  "lv2": {
+    "player_spawn": [32, 672],
+    "destination": [1216, 64],
+    "enemies": [],
+    "props": [
+      {"type": 1, "pos": [800, 704]},
+      {"type": 3, "pos": [704, 416]}
+    ]
+  },
   "lv5": {
     "player_spawn": [100, 840],
     "destination": [0, 0],

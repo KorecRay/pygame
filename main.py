@@ -195,7 +195,6 @@ while running:
             light_manager.draw(screen, player.rect, current_radius)
 
         # debug
-
         if DEBUG_MODE:
             Debugger.draw_hitboxes(screen, player, enemies, props_group, dest_group, map_handler)
 
