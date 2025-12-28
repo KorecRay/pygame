@@ -1,12 +1,17 @@
-# Pygame Tiled Project
+# Ink Ninja - Remastered
 
-This is a project demonstrating how to use Tiled Map Editor with Pygame.
+A Pygame-based platformer game featuring Tiled map integration, dynamic lighting, and level management.
 
 ## Features
 
-*   Loads TMX maps created with the Tiled Map Editor.
-*   Renders tile layers.
-*   Handles collision detection based on object layers in Tiled.
+*   **Tiled Map Integration:** Loads `.tmx` maps with support for tile layers and object layers (collisions, hazards, etc.).
+*   **Dynamic Lighting:** Implements a light manager for visibility effects.
+*   **Level System:** Includes a level selector and JSON-based level data management.
+*   **Game Entities:**
+    *   **Player:** Controllable character with movement and physics.
+    *   **Enemies:** AI-controlled entities with patrol logic.
+    *   **Props:** Interactive items like shields, torches, and anti-explosion power-ups.
+*   **Debug Mode:** Visualizes hitboxes and collision rectangles for development.
 
 ## How to Run
 
@@ -22,10 +27,23 @@ This is a project demonstrating how to use Tiled Map Editor with Pygame.
     python main.py
     ```
 
+## Controls
+
+*   **Arrow Keys:** Move
+*   **Space:** Jump
+*   **R:** Restart Level
+*   **M:** Toggle Debug Mode
+*   **ESC:** Pause Game
+
 ## Project Structure
 
-*   `main.py`: The main entry point of the game.
-*   `settings.py`: Contains all the game settings and constants.
-*   `core/maploader.py`: Handles loading and rendering the Tiled map.
-*   `assets/`: Contains all game assets like maps and tilesets.
-*   `sprites/`: Contains game sprites like the player and enemies.
+*   `main.py`: Game entry point and main loop.
+*   `settings.py`: Global configuration and constants.
+*   `core/`: Core systems (Map loader, Light manager, Level selector, etc.).
+*   `sprites/`: Game entity classes (Player, Enemy, Prop, Destination).
+*   `assets/`: Game assets (Maps, Images, JSON data).
+
+## Development
+
+*   **Map Editing:** Use [Tiled Map Editor](https://www.mapeditor.org/) to modify `.tmx` files in `assets/map/`.
+*   **Level Data:** Configure spawn points and enemy data in `assets/data/level_data.json`.

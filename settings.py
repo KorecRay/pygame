@@ -2,7 +2,7 @@ import os
 import sys
 import pygame as pg
 
-# 遊戲配置
+# Game Config
 TITLE = "Ink Ninja"
 FPS = 120
 GRID_WIDTH = 40
@@ -12,32 +12,27 @@ TILE_SIZE = 32
 WIDTH = GRID_WIDTH * TILE_SIZE    # 40 x 32 = 1280 px
 HEIGHT = GRID_HEIGHT * TILE_SIZE  # 30 x 32 = 960 px
 
-# 檔案路徑
+# File Paths
 TMX_FILE = 'assets/map/lv5.tmx'
 LEVEL_DATA_PATH = 'assets/map/lvsetting.json'
 
 def resource_path(relative_path):
-	"""取得資源的絕對路徑，支援 PyInstaller 打包後的 _MEIPASS 臨時資料夾"""
-	try:
-		base_path = sys._MEIPASS
-	except Exception:
-		base_path = os.path.abspath(".")
-	return os.path.join(base_path, relative_path)
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
-# 玩家屬性
-# 使用專門給玩家的參數，來源：sprites/player.py 的原始常數
+# Player Attributes
 PLAYER_SPEED = 3.0
 GRAVITY = 0.2
 JUMP_STRENGTH = -7.0
 BOOST_JUMP_STRENGTH = -12.0
-PLAYER_LIGHT_RADIUS = 128  # 玩家視野半徑 (像素，半徑)
+PLAYER_LIGHT_RADIUS = 128  # Player view radius (pixels)
 
-# 備註/舊參數
-# PLAYER_JUMP_VELOCITY (已棄用，改用 JUMP_STRENGTH)
-
-
-# effects
+# Effects
 SMOOTH_LIGHTING_ENABLED = True
 
-# debug
+# Debug
 DEBUG_MODE = False

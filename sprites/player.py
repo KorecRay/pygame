@@ -10,13 +10,13 @@ class Player(pygame.sprite.Sprite):
         self.is_dead = False
         self.on_ground = False
         
-        # 載入切分 (寬 96px, 高 128px)
+        # Load slices (Width 96px, Height 128px)
         self.run_frames = self._load_run_frames("assets/sprites/only_run.png", 6)
         
         self.image = self.run_frames[0]
         self.rect = self.image.get_rect(topleft=(x, y))
         
-        # 使用 Vector2 處理微小位移，避免整數捨去造成的抖動
+        # Use Vector2 for precise movement, avoiding integer rounding jitter
         self.pos = pygame.math.Vector2(x, y)
         self.vel = pygame.math.Vector2(0, 0)
 
@@ -28,7 +28,7 @@ class Player(pygame.sprite.Sprite):
             for i in range(count):
                 x_pos = i * (f_w + spacing)
                 frame = sheet.subsurface((x_pos, 0, f_w, f_h))
-                # 縮放至適合遊戲的比例 (寬約 0.8 瓦片, 高約 1.2 瓦片)
+                # Scale to fit game (Width ~0.8 tiles, Height ~1.2 tiles)
                 frame = pygame.transform.scale(frame, (int(TILE_SIZE * 0.8), int(TILE_SIZE * 1.2)))
                 frames.append(frame)
         except:
@@ -38,17 +38,17 @@ class Player(pygame.sprite.Sprite):
         return frames
 
     def _animate(self):
-        # 即使沒動，也要確保 self.image 有值
+        # Ensure self.image has a value even if not moving
         if self.vel.x != 0 and self.on_ground:
             self.frame_index += self.animation_speed
         else:
-            # 沒動時固定在第 0 幀
+            # Fix to frame 0 when idle
             self.frame_index = 0
             
         if self.frame_index >= len(self.run_frames):
             self.frame_index = 0
         
-        # 更新圖片
+        # Update image
         img = self.run_frames[int(self.frame_index)]
         self.image = pygame.transform.flip(img, True, False) if not self.facing_right else img
 
@@ -56,14 +56,14 @@ class Player(pygame.sprite.Sprite):
         self._get_input()
         self._apply_gravity()
 
-        # 分離 X 與 Y 的移動與碰撞修正，防止對角線穿牆
-        # 1. X 軸
+        # Separate X and Y movement and collision to prevent diagonal wall clipping
+        # 1. X Axis
         self.pos.x += self.vel.x
         self.rect.x = round(self.pos.x)
         self._collide_with_walls(walls, 'x')
 
-        # 2. Y 軸
-        self.on_ground = False # 每幀重置，由碰撞偵測確認
+        # 2. Y Axis
+        self.on_ground = False # Reset every frame, confirmed by collision detection
         self.pos.y += self.vel.y
         self.rect.y = round(self.pos.y)
         self._collide_with_walls(walls, 'y')

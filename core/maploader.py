@@ -8,24 +8,24 @@ from typing import List
 class TiledMap:
     def __init__(self, filename):
         try:
-            # 載入 TMX 資料（支援 PyInstaller 的臨時路徑）
+            # Load TMX data (supports PyInstaller temp path)
             tmx_path = resource_path(filename)
             self.tmx_data = pytmx.load_pygame(tmx_path, force_colorkey=(0, 0, 0))
         except Exception as e:
-            raise FileNotFoundError(f"載入 TMX 失敗: {e}")
+            raise FileNotFoundError(f"TMX load failed: {e}")
 
         self.width = self.tmx_data.width * self.tmx_data.tilewidth
         self.height = self.tmx_data.height * self.tmx_data.tileheight
 
-        # 1. 預渲染地圖畫布
+        # 1. Pre-render map surface
         self.map_surface = self._make_map_surface()
 
-        # 2. 提取功能性物件 (Collision, Hazards...)
+        # 2. Extract functional objects (Collision, Hazards...)
         self.walls = self._load_objects_from_layer("Collision")
         self.hazards = self._load_objects_from_layer("Hazards")
         self.bouncers = self._load_objects_from_layer("Bouncers")
 
-        # 3. 載入 JSON 配置
+        # 3. Load JSON config
         level_id = os.path.basename(filename).split('.')[0]
         spawn, dest, enemies, props = self._load_level_data(level_id)
 
@@ -35,23 +35,23 @@ class TiledMap:
         self.prop_data_list = props
 
     def _make_map_surface(self):
-        """核心地圖渲染：增加背景 Grid 網格"""
+        """Core map rendering: Adds background grid."""
         temp_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
 
-        # --- [新增] 繪製背景細網格 ---
-        grid_size = 32  # 根據你的 TILE_SIZE 調整
-        grid_color = (40, 40, 40)  # 深灰色，不會太搶眼
+        # --- [New] Draw background grid ---
+        grid_size = 32  # Adjust based on TILE_SIZE
+        grid_color = (40, 40, 40)  # Dark gray
 
-        # 繪製垂直線
+        # Vertical lines
         for x in range(0, self.width, grid_size):
             pygame.draw.line(temp_surface, grid_color, (x, 0), (x, self.height), 1)
-        # 繪製水平線
+        # Horizontal lines
         for y in range(0, self.height, grid_size):
             pygame.draw.line(temp_surface, grid_color, (0, y), (self.width, y), 1)
         # ---------------------------
 
         for layer in self.tmx_data.layers:
-            # 1. 處理磁磚層
+            # 1. Tile layers
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
                     tile = self.tmx_data.get_tile_image_by_gid(gid)
@@ -59,7 +59,7 @@ class TiledMap:
                         temp_surface.blit(tile, (x * self.tmx_data.tilewidth,
                                                  y * self.tmx_data.tileheight))
 
-            # 2. 處理物件層
+            # 2. Object layers
             elif isinstance(layer, pytmx.TiledObjectGroup):
                 for obj in layer:
                     content = obj.properties.get('value')
@@ -69,21 +69,21 @@ class TiledMap:
         return temp_surface
 
     def _draw_text_from_value(self, surface, obj, content):
-        """根據 TMX 物件屬性繪製文字"""
+        """Draw text based on TMX object properties."""
         try:
-            # 顏色與字體大小設定 (可視需求調整，或同樣從屬性抓取)
+            # Color and font size (can be adjusted or fetched from properties)
             color = (85, 255, 255) # #55ffff
             size = 20
             
             font = pygame.font.SysFont("Arial", size, bold=True)
             text_surf = font.render(str(content), True, color)
             
-            # 繪製到地圖畫布
+            # Draw to map surface
             surface.blit(text_surf, (obj.x, obj.y))
-            print(f"✅ [ID {obj.id}] 成功渲染文字屬性: {content}")
+            print(f"✅ [ID {obj.id}] Text rendered: {content}")
             
         except Exception as e:
-            print(f"❌ [ID {obj.id}] 渲染失敗: {e}")
+            print(f"❌ [ID {obj.id}] Render failed: {e}")
 
     def _load_objects_from_layer(self, layer_name):
         rect_list = []

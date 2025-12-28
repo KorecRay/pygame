@@ -8,23 +8,23 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, move_range, speed):
         super().__init__()
 
-        # --- 動畫設定 ---
+        # --- Animation Settings ---
         self.frame_index = 0
-        self.animation_speed = 0.15  # 數字越小動畫越慢
-        self.state = "run"  # 初始狀態
-        self.facing_right = True  # 面向方向
+        self.animation_speed = 0.15  # Smaller number = slower animation
+        self.state = "run"  # Initial state
+        self.facing_right = True  # Facing direction
 
-        # 載入並切分圖片 (假設檔案路徑如下)
+        # Load and slice images (assuming paths below)
         self.animations = {
             "idle": self._load_frames("assets/sprites/enemy_idle.png", 4),
             "run": self._load_frames("assets/sprites/enemy_run.png", 6)
         }
 
-        # 設定初始圖片
+        # Set initial image
         self.image = self.animations[self.state][self.frame_index]
         self.rect = self.image.get_rect(topleft=(x, y))
 
-        # 物理與移動屬性
+        # Physics and Movement
         self.pos = pygame.math.Vector2(x, y)
         self.vel = pygame.math.Vector2(0, 0)
         self.start_x = x
@@ -34,39 +34,39 @@ class Enemy(pygame.sprite.Sprite):
         self.is_dead = False
 
     def _load_frames(self, path, frame_count):
-        """切分 Spritesheet 的工具函式"""
+        """Helper to slice spritesheet."""
         frames = []
         try:
             sheet = pygame.image.load(resource_path(path)).convert_alpha()
             for i in range(frame_count):
-                # 每個動作都是 32x32，橫向切分
+                # Each action is 32x32, sliced horizontally
                 frame = sheet.subsurface((i * 32, 0, 32, 32))
-                # 如果你的 TILE_SIZE 不是 32，可以在這裡縮放
+                # Scale if TILE_SIZE is not 32
                 if TILE_SIZE != 32:
                     frame = pygame.transform.scale(frame, (TILE_SIZE, TILE_SIZE))
                 frames.append(frame)
         except Exception as e:
-            print(f"載入動畫錯誤 {path}: {e}")
-            # 沒圖時的防呆機制：給個顏色方塊
+            print(f"Animation load error {path}: {e}")
+            # Fallback: Red square
             dummy = pygame.Surface((TILE_SIZE, TILE_SIZE))
             dummy.fill((255, 0, 0))
             frames = [dummy]
         return frames
 
     def _animate(self):
-        """處理動畫幀切換與翻轉"""
+        """Handle frame switching and flipping."""
         animation = self.animations[self.state]
 
-        # 增加索引
+        # Increment index
         self.frame_index += self.animation_speed
         if self.frame_index >= len(animation):
             self.frame_index = 0
 
-        # 取得當前幀圖片
+        # Get current frame
         current_frame = animation[int(self.frame_index)]
 
-        # 🚨 處理左右翻面
-        # 如果 direction 是 -1 且目前面向右，就翻轉
+        # 🚨 Handle flipping
+        # Flip if direction is -1 and currently facing right
         if self.direction < 0:
             self.image = pygame.transform.flip(current_frame, True, False)
         else:
@@ -74,8 +74,8 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self, walls, *args, **kwargs):
         """
-        接收所有參數 (*args) 避免報錯，
-        解決之前的 TypeError: Enemy.update() takes 2 positional arguments but 4 were given
+        Accepts *args to prevent errors,
+        Fixes previous TypeError: Enemy.update() takes 2 positional arguments but 4 were given
         """
         if self.is_dead:
             return
@@ -83,10 +83,10 @@ class Enemy(pygame.sprite.Sprite):
         self._apply_gravity()
         self._patrol_move()
 
-        # 根據速度決定狀態 (如果速度為 0 就 idle，但你的巡邏通常都在跑)
+        # Determine state based on speed
         self.state = "run" if self.vel.x != 0 else "idle"
 
-        # 執行 X/Y 移動
+        # Execute X/Y movement
         self.rect.x = int(self.pos.x + self.vel.x)
         self._collide_and_resolve_x(walls)
         self.rect.y = int(self.pos.y + self.vel.y)
@@ -95,10 +95,10 @@ class Enemy(pygame.sprite.Sprite):
         self.pos.x = self.rect.x
         self.pos.y = self.rect.y
 
-        # 更新動畫
+        # Update animation
         self._animate()
 
-    # --- 以下 _apply_gravity, _patrol_move, _collide_and_resolve 等邏輯保持不變 ---
+    # --- _apply_gravity, _patrol_move, _collide_and_resolve logic remains same ---
     def _apply_gravity(self):
         self.vel.y += GRAVITY
         if self.vel.y > 10: self.vel.y = 10

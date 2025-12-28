@@ -12,15 +12,15 @@ from core.level import LvSelect
 from core.debug import Debugger
 from core.pause import PauseMenu
 
-# --- 1. 初始化 ---
+# --- 1. Init ---
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("墨影忍者 - LV 系統重製版")
+pygame.display.set_caption("Ink Ninja - Remastered")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 64, bold=True)
 
-# --- 2. 全域變數與群組 ---
-game_state = "LV_MENU" # 狀態: LV_MENU / PLAYING
+# --- 2. Globals & Groups ---
+game_state = "LV_MENU" # States: LV_MENU / PLAYING / PAUSED
 lv_selector = LvSelect(screen)
 pause_menu = PauseMenu(screen)
 map_handler = None
@@ -37,36 +37,35 @@ torch_timer = 0
 has_anti_explosion = False
 lv_cleared = False
 
-# 視野縮放
+# View radius
 base_radius = PLAYER_LIGHT_RADIUS
 current_radius = base_radius
 target_radius = base_radius
 lerp_speed = 0.08
 
 def load_lv(lv_num):
-    """根據編號載入關卡檔案"""
+    """Load level by number."""
     global map_handler, game_state
-    # 修改 settings 中的檔案路徑
     settings.TMX_FILE = f"assets/map/lv{lv_num}.tmx"
     try:
         map_handler = TiledMap(settings.TMX_FILE)
         reset_lv_data()
         game_state = "PLAYING"
     except Exception as e:
-        print(f"載入失敗: {e}")
+        print(f"Load failed: {e}")
 
 def reset_lv_data():
-    """完全重置當前關卡的所有物件"""
+    """Reset current level data."""
     global player, shield_timer, torch_timer, has_anti_explosion, lv_cleared
     global current_radius, target_radius
     
-    # 清空
+    # Clear groups
     all_sprites.empty()
     enemies.empty()
     props_group.empty()
     dest_group.empty()
     
-    # 重設狀態
+    # Reset state
     lv_cleared = False
     shield_timer = 0
     torch_timer = 0
@@ -74,38 +73,38 @@ def reset_lv_data():
     current_radius = base_radius
     target_radius = base_radius
 
-    # 讀取地圖數據
+    # Load map data
     lv_id = settings.TMX_FILE.split('/')[-1].split('.')[0]
     p_spawn, d_pos, e_list, p_list = map_handler._load_level_data(lv_id)
 
-    # 1. 終點
+    # 1. Destination
     if d_pos:
         goal = Destination(d_pos[0], d_pos[1])
         dest_group.add(goal)
         all_sprites.add(goal)
 
-    # 2. 玩家
+    # 2. Player
     player = Player(p_spawn[0], p_spawn[1])
     all_sprites.add(player)
 
-    # 3. 敵人 (🚨 關鍵：確保重新加入 all_sprites 與 enemies)
+    # 3. Enemies
     for e in e_list:
         new_enemy = Enemy(e["start_pos"][0], e["start_pos"][1], e["move_range"], e["speed"])
         enemies.add(new_enemy)
         all_sprites.add(new_enemy)
 
-    # 4. 道具 (🚨 關鍵：確保重新加入 all_sprites 與 props_group)
+    # 4. Props
     for p in p_list:
         new_prop = Prop(p["pos"][0], p["pos"][1], p["type"])
         props_group.add(new_prop)
         all_sprites.add(new_prop)
     
-    print(f"--- {lv_id} 重置完成 ---")
+    print(f"--- {lv_id} Reset Complete ---")
 
-# 初始化光照系統
+# Init light system
 light_manager = LightManager(base_radius)
 
-# --- 3. 遊戲主迴圈 ---
+# --- 3. Main Loop ---
 running = True
 while running:
     clock.tick(FPS)
@@ -116,7 +115,7 @@ while running:
             running = False
 
     if game_state == "LV_MENU":
-        # --- 選單邏輯 ---
+        # --- Menu Logic ---
         for event in events:
             selected_lv = lv_selector.handle_input(event)
             if selected_lv:
@@ -124,23 +123,25 @@ while running:
         lv_selector.draw()
 
     elif game_state == "PLAYING":
-        # --- 遊戲邏輯 ---
+        # --- Game Logic ---
         for event in events:
             if event.type == pygame.KEYDOWN:
-                # 通關後按 Enter 返回
+                # Return to menu after clear
                 if lv_cleared and event.key == pygame.K_RETURN:
                     game_state = "LV_MENU"
-                # 遊戲中按 R 手動重製
+                # Manual reset
                 if event.key == pygame.K_r:
                     reset_lv_data()
+                # Toggle debug
                 if event.key == pygame.K_m:
                     DEBUG_MODE = not DEBUG_MODE
-                    print(f"偵錯模式: {'開啟' if DEBUG_MODE else '關閉'}")
+                    print(f"Debug Mode: {'ON' if DEBUG_MODE else 'OFF'}")
+                # Pause
                 if event.key == pygame.K_ESCAPE and not lv_cleared:
                     game_state = "PAUSED"
 
         if not lv_cleared:
-            # 1. 計時器與視野 Lerp
+            # 1. Timers & Radius Lerp
             if shield_timer > 0: shield_timer -= 1
             if torch_timer > 0:
                 torch_timer -= 1
@@ -150,11 +151,11 @@ while running:
             
             current_radius += (target_radius - current_radius) * lerp_speed
 
-            # 2. 更新精靈
+            # 2. Update Sprites
             all_sprites.update(map_handler.walls, map_handler.hazards, map_handler.bouncers, shield_timer)
             enemies.update(map_handler.walls)
 
-            # 3. 碰撞檢查
+            # 3. Collisions
             if player.is_dead:
                 reset_lv_data()
                 continue
@@ -162,7 +163,7 @@ while running:
             if pygame.sprite.spritecollideany(player, dest_group):
                 lv_cleared = True
 
-            # 道具碰撞
+            # Prop collisions
             p_hits = pygame.sprite.spritecollide(player, props_group, True)
             for p in p_hits:
                 if p.prop_type == 1: player.vel.y = -12.0
@@ -170,7 +171,7 @@ while running:
                 elif p.prop_type == 3: shield_timer = 5 * FPS
                 elif p.prop_type == 4: torch_timer = 2 * FPS
 
-            # 敵人碰撞
+            # Enemy collisions
             e_hits = pygame.sprite.spritecollide(player, enemies, False)
             if e_hits:
                 should_die = True
@@ -184,25 +185,25 @@ while running:
                     reset_lv_data()
                     continue
 
-        # --- 4. 繪製 ---
+        # --- 4. Draw ---
         screen.fill((0, 0, 0))
         screen.blit(map_handler.map_surface, (0, 0))
         
-        # 視覺回饋
+        # Visual feedback
         if shield_timer > 0: player.image.set_alpha(150)
         else: player.image.set_alpha(255)
 
         all_sprites.draw(screen)
 
-        # 光照
+        # Lighting
         if not lv_cleared:
             light_manager.draw(screen, player.rect, current_radius)
 
-        # debug
+        # Debug
         if DEBUG_MODE:
             Debugger.draw_hitboxes(screen, player, enemies, props_group, dest_group, map_handler)
 
-        # 通關 UI
+        # Clear UI
         if lv_cleared:
             overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 180))
@@ -213,15 +214,15 @@ while running:
             screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2 + 80)))
 
     elif game_state == "PAUSED":
-        # 先畫出底層最後一幀的遊戲畫面 (保持畫面停留)
+        # Draw last frame
         screen.fill((0, 0, 0))
         screen.blit(map_handler.map_surface, (0, 0))
         all_sprites.draw(screen)
 
-        # 繪製暫停選單
+        # Draw pause menu
         pause_menu.draw()
 
-        # 處理暫停選單輸入
+        # Handle pause input
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 game_state = "PLAYING"

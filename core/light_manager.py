@@ -6,41 +6,41 @@ class LightManager:
         self.default_radius = light_radius
         self.dark_mask = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
         
-        # 建立一個基礎的漸層光圈 (256x256)，稍後用來縮放
+        # Create a base gradient circle (512x512) for later scaling
         self.base_size = 512
         self.base_brush = self._create_base_brush(self.base_size // 2)
 
     def _create_base_brush(self, radius):
-        """建立一個固定的基礎漸層圓形"""
+        """Creates a fixed base gradient circle."""
         brush_size = radius * 2
         surface = pygame.Surface((brush_size, brush_size), pygame.SRCALPHA)
-        # 初始填充不透明黑
+        # Fill with opaque black initially
         surface.fill((0, 0, 0, 255))
         
         for r in range(radius, 0, -2):
-            # 計算透明度：越往中心越透明 (0)
+            # Calculate alpha: more transparent (0) towards the center
             alpha = int(255 * (r / radius))
             pygame.draw.circle(surface, (0, 0, 0, alpha), (radius, radius), r)
         return surface
 
     def draw(self, screen, player_rect, current_radius):
-        # 1. 填充遮罩為全黑
+        # 1. Fill mask with solid black
         self.dark_mask.fill((0, 0, 0, 255))
 
-        # 2. 根據當前要求的半徑縮放基礎光圈
+        # 2. Scale base brush according to current radius
         r_int = int(current_radius)
-        if r_int <= 0: return # 防止半徑為 0 導致錯誤
+        if r_int <= 0: return # Prevent error if radius is 0
         
-        # 動態縮放 brush
+        # Dynamic scaling of brush
         scaled_brush = pygame.transform.scale(self.base_brush, (r_int * 2, r_int * 2))
         
-        # 3. 計算繪製位置 (讓光圈中心對準玩家中心)
+        # 3. Calculate draw position (center brush on player)
         center = player_rect.center
         blit_x = center[0] - r_int
         blit_y = center[1] - r_int
 
-        # 4. 使用 BLEND_RGBA_MIN 挖洞
+        # 4. Carve hole using BLEND_RGBA_MIN
         self.dark_mask.blit(scaled_brush, (blit_x, blit_y), special_flags=pygame.BLEND_RGBA_MIN)
 
-        # 5. 蓋到主螢幕
+        # 5. Blit to main screen
         screen.blit(self.dark_mask, (0, 0))
