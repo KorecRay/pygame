@@ -126,7 +126,7 @@ class LvSelect:
         # 3. 底部裝飾與說明 (固定不動)
         pygame.draw.line(self.screen, (60, 150, 100), (WIDTH // 4, HEIGHT - 75), (3 * WIDTH // 4, HEIGHT - 75), 2)
 
-        controls_text = "WASD: MOVE  |  R: RESET  |  CLICK MISSION"
+        controls_text = "A/D: MOVE  |  W/SPACE: JUMP  |  Esc: PAUSE  |  R: RESET  |  CLICK MISSION"
         tip_surf = self.tip_font.render(controls_text, True, (100, 130, 115))
         self.screen.blit(tip_surf, tip_surf.get_rect(center=(WIDTH // 2, HEIGHT - 45)))
 

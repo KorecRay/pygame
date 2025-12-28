@@ -10,6 +10,7 @@ from sprites.dest import Destination
 from core.light_manager import LightManager
 from core.level import LvSelect
 from core.debug import Debugger
+from core.pause import PauseMenu
 
 # --- 1. 初始化 ---
 pygame.init()
@@ -21,6 +22,7 @@ font = pygame.font.SysFont("Arial", 64, bold=True)
 # --- 2. 全域變數與群組 ---
 game_state = "LV_MENU" # 狀態: LV_MENU / PLAYING
 lv_selector = LvSelect(screen)
+pause_menu = PauseMenu(screen)
 map_handler = None
 light_manager = None
 
@@ -134,6 +136,8 @@ while running:
                 if event.key == pygame.K_m:
                     DEBUG_MODE = not DEBUG_MODE
                     print(f"偵錯模式: {'開啟' if DEBUG_MODE else '關閉'}")
+                if event.key == pygame.K_ESCAPE and not lv_cleared:
+                    game_state = "PAUSED"
 
         if not lv_cleared:
             # 1. 計時器與視野 Lerp
@@ -207,6 +211,26 @@ while running:
             screen.blit(txt, txt.get_rect(center=(WIDTH//2, HEIGHT//2)))
             sub = font.render("Press 'ENTER' to Menu", True, (200, 200, 200))
             screen.blit(sub, sub.get_rect(center=(WIDTH//2, HEIGHT//2 + 80)))
+
+    elif game_state == "PAUSED":
+        # 先畫出底層最後一幀的遊戲畫面 (保持畫面停留)
+        screen.fill((0, 0, 0))
+        screen.blit(map_handler.map_surface, (0, 0))
+        all_sprites.draw(screen)
+
+        # 繪製暫停選單
+        pause_menu.draw()
+
+        # 處理暫停選單輸入
+        for event in events:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                game_state = "PLAYING"
+
+            action = pause_menu.handle_input(event)
+            if action == "RESUME":
+                game_state = "PLAYING"
+            elif action == "MAIN_MENU":
+                game_state = "LV_MENU"
 
     pygame.display.flip()
 
