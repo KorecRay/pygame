@@ -40,7 +40,7 @@
     ]
   },
   "lv5": {
-    "player_spawn": [96, 832],
+    "player_spawn": [16, 768],
     "destination": [10, 0],
     "enemies": [
       {
