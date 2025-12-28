@@ -77,13 +77,14 @@ class Player(pygame.sprite.Sprite):
     def _get_input(self):
         keys = pygame.key.get_pressed()
         self.vel.x = 0
-        if keys[pygame.K_a]:
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             self.vel.x = -PLAYER_SPEED
             self.facing_right = False
-        if keys[pygame.K_d]:
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.vel.x = PLAYER_SPEED
             self.facing_right = True
-        if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
+            
+        if (keys[pygame.K_SPACE] or keys[pygame.K_w] or keys[pygame.K_UP]) and self.on_ground:
             self.vel.y = JUMP_STRENGTH
             self.on_ground = False
 

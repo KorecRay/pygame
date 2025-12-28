@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="36">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="43">
  <tileset firstgid="1" name="factory_32x32_tiles" tilewidth="32" tileheight="32" tilecount="64" columns="8">
   <image source="factory_32x32_tiles.png" width="256" height="256"/>
  </tileset>
@@ -64,6 +64,9 @@
   <object id="30" x="192" y="384" width="32" height="32"/>
   <object id="31" x="224" y="448" width="64" height="64"/>
   <object id="32" x="288" y="480" width="32" height="32"/>
+  <object id="36" x="704" y="928" width="96" height="32"/>
+  <object id="41" x="1216" y="928" width="64" height="32"/>
+  <object id="42" x="384" y="928" width="64" height="32"/>
  </objectgroup>
  <objectgroup id="3" name="Bouncers"/>
  <objectgroup color="#ff0000" id="4" name="Hazards">
@@ -72,6 +75,9 @@
   <object id="19" x="0.333333" y="206.833" width="64" height="16.3333"/>
   <object id="21" x="0" y="960" width="1280" height="32"/>
   <object id="33" x="320" y="559" width="352" height="17"/>
+  <object id="37" x="704" y="896" width="96" height="32"/>
+  <object id="38" x="384" y="896" width="64" height="32"/>
+  <object id="39" x="1216" y="896" width="64" height="32"/>
  </objectgroup>
  <objectgroup id="8" name="text">
   <object id="34" x="661" y="380" width="115.5" height="19">

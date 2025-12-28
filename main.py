@@ -21,6 +21,7 @@ font = pygame.font.SysFont("Arial", 64, bold=True)
 
 # --- 2. Globals & Groups ---
 game_state = "LV_MENU" # States: LV_MENU / PLAYING / PAUSED
+death_count = 0
 lv_selector = LvSelect(screen)
 pause_menu = PauseMenu(screen)
 map_handler = None
@@ -57,7 +58,7 @@ def load_lv(lv_num):
 def reset_lv_data():
     """Reset current level data."""
     global player, shield_timer, torch_timer, has_anti_explosion, lv_cleared
-    global current_radius, target_radius
+    global current_radius, target_radius, death_count
     
     # Clear groups
     all_sprites.empty()
@@ -131,6 +132,7 @@ while running:
                     game_state = "LV_MENU"
                 # Manual reset
                 if event.key == pygame.K_r:
+                    death_count += 1
                     reset_lv_data()
                 # Toggle debug
                 if event.key == pygame.K_m:
@@ -157,6 +159,7 @@ while running:
 
             # 3. Collisions
             if player.is_dead:
+                death_count += 1
                 reset_lv_data()
                 continue
 
@@ -182,13 +185,16 @@ while running:
                         has_anti_explosion = False
                         should_die = False
                 if should_die:
+                    death_count += 1
                     reset_lv_data()
                     continue
 
-        # --- 4. Draw ---
+        # ---  Draw ---
         screen.fill((0, 0, 0))
         screen.blit(map_handler.map_surface, (0, 0))
         
+        #
+
         # Visual feedback
         if shield_timer > 0: player.image.set_alpha(150)
         else: player.image.set_alpha(255)
@@ -198,6 +204,17 @@ while running:
         # Lighting
         if not lv_cleared:
             light_manager.draw(screen, player.rect, current_radius)
+
+        death_ui_font = pygame.font.SysFont("Consolas", 24, bold=True)
+        death_text = f"DEATHS: {death_count}"
+        death_surf = death_ui_font.render(death_text, True, (255, 60, 60))
+        death_rect = death_surf.get_rect(topright=(WIDTH - 25, 25))
+        
+        # 繪製半透明黑色背景框
+        bg_rect = death_rect.inflate(20, 10)
+        pygame.draw.rect(screen, (0, 0, 0, 160), bg_rect, border_radius=5)
+        pygame.draw.rect(screen, (255, 60, 60), bg_rect, 1, border_radius=5) # 紅色細邊框
+        screen.blit(death_surf, death_rect)
 
         # Debug
         if DEBUG_MODE:
