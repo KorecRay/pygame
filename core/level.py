@@ -85,7 +85,7 @@ class LvSelect:
         self._draw_cool_background()
 
         # 1. 標題：維持不動，增加沉穩的發光感
-        title_text = "SHADOW RUNNER"
+        title_text = "Dark Ning...ja"
         title_pos = (WIDTH // 2, 110)
 
         # 固定層次發光
