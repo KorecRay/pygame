@@ -1,7 +1,7 @@
 {
   "lv1": {
     "player_spawn": [60, 600],
-    "destination": [1248, 160],
+    "destination": [1226, 128],
     "enemies": [],
     "props": [
       {"type": 4, "pos": [895, 479]}
@@ -9,16 +9,39 @@
   },
   "lv2": {
     "player_spawn": [32, 672],
-    "destination": [1216, 64],
-    "enemies": [],
+    "destination": [1226, 32],
+    "enemies": [
+      {
+        "type": "ExplosiveBot",
+        "start_pos": [978, 96],
+        "move_range": 100,
+        "speed": 1.5
+      }
+    ],
     "props": [
       {"type": 1, "pos": [800, 704]},
       {"type": 3, "pos": [704, 416]}
     ]
   },
+  "lv3": {
+    "player_spawn": [32, 672],
+    "destination": [10, 32],
+    "enemies": [],
+    "props": [
+    ]
+  },
+  "lv4": {
+    "player_spawn": [32, 768],
+    "destination": [1226, 480],
+    "enemies": [],
+    "props": [
+      {"type": 1, "pos": [1088, 768]},
+      {"type": 1, "pos": [128, 576]}
+    ]
+  },
   "lv5": {
-    "player_spawn": [100, 840],
-    "destination": [0, 0],
+    "player_spawn": [96, 832],
+    "destination": [10, 0],
     "enemies": [
       {
         "type": "ExplosiveBot",

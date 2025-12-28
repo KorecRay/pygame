@@ -147,7 +147,7 @@ while running:
             current_radius += (target_radius - current_radius) * lerp_speed
 
             # 2. 更新精靈
-            all_sprites.update(map_handler.walls, map_handler.hazards, map_handler.bouncers)
+            all_sprites.update(map_handler.walls, map_handler.hazards, map_handler.bouncers, shield_timer)
             enemies.update(map_handler.walls)
 
             # 3. 碰撞檢查

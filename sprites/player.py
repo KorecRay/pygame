@@ -52,7 +52,7 @@ class Player(pygame.sprite.Sprite):
         img = self.run_frames[int(self.frame_index)]
         self.image = pygame.transform.flip(img, True, False) if not self.facing_right else img
 
-    def update(self, walls, hazards, bouncers):
+    def update(self, walls, hazards, bouncers,has_shield, *args, **kwargs):
         self._get_input()
         self._apply_gravity()
 
@@ -69,8 +69,8 @@ class Player(pygame.sprite.Sprite):
         self._collide_with_walls(walls, 'y')
 
         self._animate()
-        
-        if self._check_lethal(hazards):
+
+        if self._check_lethal(hazards) and not has_shield:
             self.is_dead = True
         self._check_bouncers(bouncers)
 

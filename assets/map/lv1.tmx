@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="34">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="40" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="44">
  <tileset firstgid="1" name="factory_32x32_tiles" tilewidth="32" tileheight="32" tilecount="64" columns="8">
   <image source="factory_32x32_tiles.png" width="256" height="256"/>
  </tileset>
@@ -48,13 +48,23 @@
   <object id="11" x="320" y="224" width="960" height="64"/>
   <object id="12" x="0" y="224" width="192" height="64"/>
   <object id="14" x="0" y="512" width="1120" height="64"/>
-  <object id="16" x="0" y="672" width="768" height="292"/>
-  <object id="17" x="832" y="672" width="448" height="284"/>
+  <object id="16" x="0" y="672" width="608" height="292"/>
+  <object id="17" x="864" y="704" width="416" height="252"/>
   <object id="20" x="1280" y="0" width="26" height="968"/>
   <object id="21" x="-32" y="0" width="32" height="960"/>
   <object id="26" x="1216" y="576" width="64" height="96"/>
-  <object id="28" x="160" y="416" width="128" height="96"/>
+  <object id="28" x="160" y="421.636" width="122" height="90.3636"/>
   <object id="29" x="192" y="320" width="32" height="96"/>
+  <object id="34" x="608" y="704" width="128" height="256"/>
+  <object id="35" x="640" y="678" width="121.273" height="26"/>
+  <object id="36" x="614.909" y="678.003" width="25.0909" height="25.9972"/>
+  <object id="37" x="736" y="704" width="25.75" height="256"/>
+  <object id="38" x="928" y="672" width="352" height="32"/>
+  <object id="39" x="838.5" y="678" width="57.5" height="26"/>
+  <object id="40" x="896" y="678" width="25.625" height="26"/>
+  <object id="41" x="838.727" y="704" width="25.2727" height="256"/>
+  <object id="42" x="607.998" y="672" width="10.9091" height="4.69016" rotation="38.3156"/>
+  <object id="43" x="919.702" y="679.08" width="10.9091" height="4.69016" rotation="319.551"/>
  </objectgroup>
  <objectgroup id="6" name="Bouncers"/>
  <objectgroup id="7" name="text">
