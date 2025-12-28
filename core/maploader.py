@@ -1,14 +1,16 @@
+import os
 import pygame
 import pytmx
 import json
-from settings import WIDTH, HEIGHT, LEVEL_DATA_PATH
+from settings import WIDTH, HEIGHT, LEVEL_DATA_PATH, resource_path
 from typing import List
 
 class TiledMap:
     def __init__(self, filename):
         try:
-            # 載入 TMX 資料
-            self.tmx_data = pytmx.load_pygame(filename, force_colorkey=(0, 0, 0))
+            # 載入 TMX 資料（支援 PyInstaller 的臨時路徑）
+            tmx_path = resource_path(filename)
+            self.tmx_data = pytmx.load_pygame(tmx_path, force_colorkey=(0, 0, 0))
         except Exception as e:
             raise FileNotFoundError(f"載入 TMX 失敗: {e}")
 
@@ -24,7 +26,7 @@ class TiledMap:
         self.bouncers = self._load_objects_from_layer("Bouncers")
 
         # 3. 載入 JSON 配置
-        level_id = filename.split('/')[-1].split('.')[0]
+        level_id = os.path.basename(filename).split('.')[0]
         spawn, dest, enemies, props = self._load_level_data(level_id)
 
         self.player_spawn = spawn
@@ -95,9 +97,9 @@ class TiledMap:
 
     def _load_level_data(self, level_id):
         try:
-            with open(LEVEL_DATA_PATH, 'r', encoding='utf-8') as f:
+            with open(resource_path(LEVEL_DATA_PATH), 'r', encoding='utf-8') as f:
                 data = json.load(f)
             lv = data.get(level_id, {})
             return lv.get("player_spawn", [0,0]), lv.get("destination"), lv.get("enemies", []), lv.get("props", [])
-        except Exception as e:
+        except Exception:
             return [0,0], None, [], []

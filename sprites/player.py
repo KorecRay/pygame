@@ -1,5 +1,5 @@
 import pygame
-from settings import TILE_SIZE, GRAVITY, PLAYER_SPEED, JUMP_STRENGTH, BOOST_JUMP_STRENGTH
+from settings import TILE_SIZE, GRAVITY, PLAYER_SPEED, JUMP_STRENGTH, BOOST_JUMP_STRENGTH, resource_path
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -23,7 +23,7 @@ class Player(pygame.sprite.Sprite):
     def _load_run_frames(self, path, count):
         frames = []
         try:
-            sheet = pygame.image.load(path).convert_alpha()
+            sheet = pygame.image.load(resource_path(path)).convert_alpha()
             f_w, f_h, spacing = 96, 128, 32
             for i in range(count):
                 x_pos = i * (f_w + spacing)

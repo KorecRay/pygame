@@ -1,5 +1,5 @@
 import pygame
-from settings import TILE_SIZE
+from settings import TILE_SIZE, resource_path
 
 
 class Prop(pygame.sprite.Sprite):
@@ -11,7 +11,7 @@ class Prop(pygame.sprite.Sprite):
         # 載入靜態圖片 (例如 assets/sprites/prop_1.png)
         try:
             path = f"assets/sprites/prop_{self.prop_type}.png"
-            self.image = pygame.image.load(path).convert_alpha()
+            self.image = pygame.image.load(resource_path(path)).convert_alpha()
             # 確保尺寸符合遊戲設定
             if self.image.get_size() != (32, 32):
                 self.image = pygame.transform.scale(self.image, (32, 32))

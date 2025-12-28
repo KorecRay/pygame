@@ -1,5 +1,5 @@
 import pygame
-from settings import TILE_SIZE
+from settings import TILE_SIZE, resource_path
 
 GRAVITY = 0.7
 
@@ -37,7 +37,7 @@ class Enemy(pygame.sprite.Sprite):
         """切分 Spritesheet 的工具函式"""
         frames = []
         try:
-            sheet = pygame.image.load(path).convert_alpha()
+            sheet = pygame.image.load(resource_path(path)).convert_alpha()
             for i in range(frame_count):
                 # 每個動作都是 32x32，橫向切分
                 frame = sheet.subsurface((i * 32, 0, 32, 32))
