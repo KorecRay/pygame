@@ -33,27 +33,37 @@ class TiledMap:
         self.prop_data_list = props
 
     def _make_map_surface(self):
-        """核心地圖渲染：將瓦片與屬性文字合併"""
+        """核心地圖渲染：增加背景 Grid 網格"""
         temp_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        
+
+        # --- [新增] 繪製背景細網格 ---
+        grid_size = 32  # 根據你的 TILE_SIZE 調整
+        grid_color = (40, 40, 40)  # 深灰色，不會太搶眼
+
+        # 繪製垂直線
+        for x in range(0, self.width, grid_size):
+            pygame.draw.line(temp_surface, grid_color, (x, 0), (x, self.height), 1)
+        # 繪製水平線
+        for y in range(0, self.height, grid_size):
+            pygame.draw.line(temp_surface, grid_color, (0, y), (self.width, y), 1)
+        # ---------------------------
+
         for layer in self.tmx_data.layers:
             # 1. 處理磁磚層
             if isinstance(layer, pytmx.TiledTileLayer):
                 for x, y, gid in layer:
                     tile = self.tmx_data.get_tile_image_by_gid(gid)
                     if tile:
-                        temp_surface.blit(tile, (x * self.tmx_data.tilewidth, 
-                                               y * self.tmx_data.tileheight))
-            
-            # 2. 處理物件層 (直接針對屬性內的 'value' 進行提取)
+                        temp_surface.blit(tile, (x * self.tmx_data.tilewidth,
+                                                 y * self.tmx_data.tileheight))
+
+            # 2. 處理物件層
             elif isinstance(layer, pytmx.TiledObjectGroup):
                 for obj in layer:
-                    # 🚨 這是你指定的方式：從 properties 字典裡抓取名為 "value" 的屬性
                     content = obj.properties.get('value')
-                    
                     if content:
                         self._draw_text_from_value(temp_surface, obj, content)
-                        
+
         return temp_surface
 
     def _draw_text_from_value(self, surface, obj, content):

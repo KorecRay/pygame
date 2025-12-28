@@ -43,4 +43,4 @@ class LightManager:
         self.dark_mask.blit(scaled_brush, (blit_x, blit_y), special_flags=pygame.BLEND_RGBA_MIN)
 
         # 5. 蓋到主螢幕
-        # screen.blit(self.dark_mask, (0, 0))
+        screen.blit(self.dark_mask, (0, 0))
