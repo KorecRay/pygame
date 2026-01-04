@@ -236,6 +236,7 @@ while running:
         screen.blit(map_handler.map_surface, (0, 0))
         all_sprites.draw(screen)
 
+        light_manager.draw(screen, player.rect, current_radius)
         # Draw pause menu
         pause_menu.draw()
 
